@@ -54,5 +54,9 @@ htmlcov/
 # *.avi
 # *.mov
 
+# Large archive files
+cursor-tutor-main/javascript.zip
+
 # Config files with sensitive data (if any)
-# config/secrets.json
+chat_config.json
+config/secrets.json

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}案件新規登録 - 要員アサイン管理システム{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">案件新規登録</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('project_list') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 一覧に戻る
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">基本情報</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="project_code" class="form-label">案件コード <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="project_code" name="project_code" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="project_name" class="form-label">案件名 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="project_name" name="project_name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">ステータス <span class="text-danger">*</span></label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="">選択してください</option>
+                                <option value="PLANNING">計画中</option>
+                                <option value="ACTIVE">進行中</option>
+                                <option value="SUSPENDED">一時停止</option>
+                                <option value="COMPLETED">完了</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="total_hours" class="form-label">総工数（時間）</label>
+                            <input type="number" class="form-control" id="total_hours" name="total_hours" min="0" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="start_date" class="form-label">開始日</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="end_date" class="form-label">終了日</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">案件説明</label>
+                        <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('project_list') }}" class="btn btn-outline-secondary me-md-2">キャンセル</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 登録
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">登録後の設定</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    案件を登録後、以下の設定を行うことができます：
+                </p>
+                <ul class="list-unstyled small">
+                    <li><i class="fas fa-check text-success me-2"></i>案件要件の設定</li>
+                    <li><i class="fas fa-check text-success me-2"></i>要員マッチング</li>
+                    <li><i class="fas fa-check text-success me-2"></i>アサイン作成</li>
+                </ul>
+                <p class="text-muted small">
+                    これらの設定は案件詳細画面から行えます。
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

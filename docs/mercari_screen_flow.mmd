@@ -1,0 +1,34 @@
+graph TD
+    A[ログイン画面] --> B{認証}
+    B -->|成功| C[メイン画面]
+    B -->|失敗| A
+    A --> D[新規登録ダイアログ]
+    D -->|登録完了| A
+    D -->|キャンセル| A
+    
+    C --> E[商品検索タブ]
+    C --> F[マイページタブ]
+    C --> G[出品タブ]
+    C --> H[管理者タブ]
+    C --> I[ログアウト]
+    I --> A
+    
+    E --> J[商品詳細ダイアログ]
+    J -->|購入| K[取引開始]
+    J -->|閉じる| E
+    
+    G --> L[商品出品]
+    L --> G
+    
+    H --> M[統計情報表示]
+    
+    F --> N[取引履歴表示]
+    
+    style A fill:#FF6B6B,stroke:#333,stroke-width:2px,color:#fff
+    style C fill:#4ECDC4,stroke:#333,stroke-width:2px,color:#fff
+    style E fill:#45B7D1,stroke:#333,stroke-width:2px,color:#fff
+    style F fill:#45B7D1,stroke:#333,stroke-width:2px,color:#fff
+    style G fill:#45B7D1,stroke:#333,stroke-width:2px,color:#fff
+    style H fill:#45B7D1,stroke:#333,stroke-width:2px,color:#fff
+    style D fill:#F39C12,stroke:#333,stroke-width:2px,color:#fff
+    style J fill:#F39C12,stroke:#333,stroke-width:2px,color:#fff

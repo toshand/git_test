@@ -1,0 +1,65 @@
+{
+  "database": {
+    "path": "uat_test.db",
+    "backup": true,
+    "cleanup": true
+  },
+  "test_data": {
+    "users_count": 6,
+    "products_count": 50,
+    "transactions_count": 30,
+    "messages_count": 20,
+    "reviews_count": 15,
+    "categories": [
+      "電子機器",
+      "ファッション", 
+      "本・雑誌",
+      "スポーツ",
+      "ホビー",
+      "家電",
+      "食品",
+      "美容・健康",
+      "自動車",
+      "不動産"
+    ]
+  },
+  "test_execution": {
+    "run_all": true,
+    "priority_filter": null,
+    "timeout": 300,
+    "parallel_execution": false,
+    "retry_failed_tests": true,
+    "max_retries": 3
+  },
+  "performance": {
+    "login_timeout": 5.0,
+    "search_timeout": 3.0,
+    "display_timeout": 2.0,
+    "memory_limit": "512MB"
+  },
+  "reporting": {
+    "generate_html": true,
+    "generate_json": true,
+    "generate_xml": false,
+    "output_dir": "uat_reports",
+    "include_screenshots": false,
+    "detailed_logs": true
+  },
+  "security": {
+    "test_sql_injection": true,
+    "test_xss": true,
+    "test_authentication": true,
+    "test_authorization": true
+  },
+  "notifications": {
+    "email_notifications": false,
+    "slack_notifications": false,
+    "webhook_url": null
+  },
+  "environment": {
+    "test_environment": "local",
+    "browser": "headless",
+    "debug_mode": false,
+    "verbose_logging": true
+  }
+}

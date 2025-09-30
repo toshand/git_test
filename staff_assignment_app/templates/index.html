@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}ダッシュボード - 要員アサイン管理システム（生成AI版）{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">ダッシュボード</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('staff_new') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-user-plus"></i> 要員追加
+            </a>
+            <a href="{{ url_for('project_new') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-plus"></i> 案件追加
+            </a>
+            <a href="{{ url_for('assignment_new') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-tasks"></i> アサイン追加
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 統計カード -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">総要員数</div>
+                        <div class="stats-number">{{ total_staff }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">総案件数</div>
+                        <div class="stats-number">{{ total_projects }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-project-diagram fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">アクティブアサイン</div>
+                        <div class="stats-number">{{ active_assignments }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-tasks fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">AI候補選定</div>
+                        <div class="stats-number">
+                            <a href="#" class="text-white text-decoration-none" onclick="showAICandidates()">
+                                <i class="fas fa-robot"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-brain fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- クイックアクション -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt"></i> クイックアクション
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('staff_new') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-user-plus"></i><br>
+                            <small>要員追加</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('project_new') }}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-plus"></i><br>
+                            <small>案件追加</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('assignment_new') }}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-tasks"></i><br>
+                            <small>アサイン追加</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-info w-100" onclick="showAICandidates()">
+                            <i class="fas fa-robot"></i><br>
+                            <small>AI候補選定</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近のアサイン -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clock"></i> 最近のアサイン
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>要員</th>
+                                    <th>案件</th>
+                                    <th>アサインタイプ</th>
+                                    <th>割合</th>
+                                    <th>ステータス</th>
+                                    <th>作成日</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in recent_assignments %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('staff_detail', staff_id=assignment.staff.id) }}">
+                                            {{ assignment.staff.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('project_detail', project_id=assignment.project.id) }}">
+                                            {{ assignment.project.project_name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if assignment.assignment_type.value == 'FULL' else 'secondary' }}">
+                                            {{ 'フル' if assignment.assignment_type.value == 'FULL' else 'パーシャル' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ assignment.allocation_percentage * 100 }}%">
+                                                {{ "%.1f"|format(assignment.allocation_percentage * 100) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if assignment.status.value == 'ACTIVE' else 'secondary' }}">
+                                            {{ 'アクティブ' if assignment.status.value == 'ACTIVE' else '非アクティブ' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ assignment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>最近のアサインはありません。</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI候補選定モーダル -->
+<div class="modal fade" id="aiCandidatesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-robot"></i> AI候補選定
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="aiCandidatesForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="projectSelect" class="form-label">案件を選択</label>
+                            <select class="form-select" id="projectSelect" name="project_id" required>
+                                <option value="">案件を選択してください</option>
+                                <!-- 案件リストはJavaScriptで動的に読み込み -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="yearSelect" class="form-label">年</label>
+                            <select class="form-select" id="yearSelect" name="year">
+                                {% for year in range(2023, 2026) %}
+                                <option value="{{ year }}" {% if year == 2024 %}selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="monthSelect" class="form-label">月</label>
+                            <select class="form-select" id="monthSelect" name="month">
+                                {% for month in range(1, 13) %}
+                                <option value="{{ month }}" {% if month == 1 %}selected{% endif %}>{{ month }}月</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> AI候補を検索
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showAICandidates() {
+    // 案件リストを読み込み
+    loadProjectList();
+    $('#aiCandidatesModal').modal('show');
+}
+
+function loadProjectList() {
+    // 案件リストを取得（実際の実装ではAPIエンドポイントから取得）
+    // ここでは簡略化
+    const projectSelect = document.getElementById('projectSelect');
+    projectSelect.innerHTML = '<option value="">案件を選択してください</option>';
+}
+
+document.getElementById('aiCandidatesForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const projectId = formData.get('project_id');
+    const year = formData.get('year');
+    const month = formData.get('month');
+    
+    if (projectId) {
+        window.location.href = `/assignments/ai-candidates/${projectId}?year=${year}&month=${month}`;
+    } else {
+        alert('案件を選択してください。');
+    }
+});
+</script>
+{% endblock %}

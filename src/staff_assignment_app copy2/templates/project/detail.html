@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}案件詳細 - 要員アサイン管理システム{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">案件詳細</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('assignment_match', project_id=project.id) }}" class="btn btn-success me-2">
+            <i class="fas fa-search"></i> 要員マッチング
+        </a>
+        <a href="{{ url_for('project_list') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> 一覧に戻る
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 案件基本情報 -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">案件基本情報</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">案件コード:</dt>
+                            <dd class="col-sm-8">{{ project.project_code }}</dd>
+                            
+                            <dt class="col-sm-4">案件名:</dt>
+                            <dd class="col-sm-8">{{ project.project_name }}</dd>
+                            
+                            <dt class="col-sm-4">ステータス:</dt>
+                            <dd class="col-sm-8">
+                                {% if project.status.value == 'PLANNING' %}
+                                    <span class="badge bg-secondary">計画中</span>
+                                {% elif project.status.value == 'ACTIVE' %}
+                                    <span class="badge bg-success">進行中</span>
+                                {% elif project.status.value == 'SUSPENDED' %}
+                                    <span class="badge bg-warning">一時停止</span>
+                                {% elif project.status.value == 'COMPLETED' %}
+                                    <span class="badge bg-primary">完了</span>
+                                {% endif %}
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">開始日:</dt>
+                            <dd class="col-sm-8">{{ project.start_date.strftime('%Y/%m/%d') if project.start_date else '-' }}</dd>
+                            
+                            <dt class="col-sm-4">終了日:</dt>
+                            <dd class="col-sm-8">{{ project.end_date.strftime('%Y/%m/%d') if project.end_date else '-' }}</dd>
+                            
+                            <dt class="col-sm-4">総工数:</dt>
+                            <dd class="col-sm-8">{{ project.total_hours }}時間</dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                {% if project.description %}
+                <div class="mt-3">
+                    <h6>案件説明</h6>
+                    <p class="text-muted">{{ project.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 案件要件 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">案件要件</h5>
+            </div>
+            <div class="card-body">
+                {% if project.requirements %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>専門領域</th>
+                                    <th>スキル</th>
+                                    <th>プロフェッション</th>
+                                    <th>必要工数</th>
+                                    <th>優先度</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in project.requirements %}
+                                <tr>
+                                    <td>
+                                        {% if req.domain_type %}
+                                            <span class="badge bg-success">{{ req.domain_type.value }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if req.skill_type %}
+                                            <span class="badge bg-info">{{ req.skill_type.value }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if req.profession_type %}
+                                            <span class="badge bg-warning">{{ req.profession_type.value }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ req.required_hours }}時間</td>
+                                    <td>
+                                        <span class="badge bg-{% if req.priority >= 4 %}danger{% elif req.priority >= 3 %}warning{% else %}secondary{% endif %}">
+                                            {{ req.priority }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">案件要件が設定されていません</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- アサイン状況 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">アサイン状況</h5>
+            </div>
+            <div class="card-body">
+                {% if project.assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>要員</th>
+                                    <th>タイプ</th>
+                                    <th>割合</th>
+                                    <th>工数</th>
+                                    <th>ステータス</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in project.assignments %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('staff_detail', staff_id=assignment.staff.id) }}" class="text-decoration-none">
+                                            {{ assignment.staff.name }}
+                                        </a>
+                                        <br>
+                                        <small class="text-muted">{{ assignment.staff.employee_id }}</small>
+                                    </td>
+                                    <td>
+                                        {% if assignment.assignment_type.value == 'FULL' %}
+                                            <span class="badge bg-primary">フル</span>
+                                        {% else %}
+                                            <span class="badge bg-info">パーシャル</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ assignment.allocation_percentage * 100 }}%" 
+                                                 aria-valuenow="{{ assignment.allocation_percentage * 100 }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                                {{ (assignment.allocation_percentage * 100)|round(1) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ assignment.assigned_hours }}時間</td>
+                                    <td>
+                                        {% if assignment.status.value == 'ACTIVE' %}
+                                            <span class="badge bg-success">アクティブ</span>
+                                        {% elif assignment.status.value == 'INACTIVE' %}
+                                            <span class="badge bg-secondary">非アクティブ</span>
+                                        {% elif assignment.status.value == 'COMPLETED' %}
+                                            <span class="badge bg-primary">完了</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">アサインされている要員はありません</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- サイドバー -->
+    <div class="col-lg-4">
+        <!-- 案件サマリー -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">案件サマリー</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ project.total_hours }}</h4>
+                        <p class="text-muted small">総工数（時間）</p>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">{{ project.assignments|length }}</h4>
+                        <p class="text-muted small">アサイン数</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 進捗状況 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">進捗状況</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+                            60%
+                        </div>
+                    </div>
+                    <p class="text-muted small">案件進捗率</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

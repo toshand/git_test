@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+
+{% block title %}要員詳細 - 要員アサイン管理システム{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">要員詳細</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('staff_edit', staff_id=staff.id) }}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-edit"></i> 編集
+        </a>
+        <a href="{{ url_for('staff_list') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> 一覧に戻る
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 基本情報 -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">基本情報</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">社員ID:</dt>
+                            <dd class="col-sm-8">{{ staff.employee_id }}</dd>
+                            
+                            <dt class="col-sm-4">氏名:</dt>
+                            <dd class="col-sm-8">{{ staff.name }}</dd>
+                            
+                            <dt class="col-sm-4">会社:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-{% if staff.company_type.value == 'KOBELCO' %}primary{% else %}secondary{% endif %}">
+                                    {{ 'コベルコシステム' if staff.company_type.value == 'KOBELCO' else 'パートナー' }}
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">部署:</dt>
+                            <dd class="col-sm-8">{{ staff.department or '-' }}</dd>
+                            
+                            <dt class="col-sm-4">メール:</dt>
+                            <dd class="col-sm-8">{{ staff.email or '-' }}</dd>
+                            
+                            <dt class="col-sm-4">電話:</dt>
+                            <dd class="col-sm-8">{{ staff.phone or '-' }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- スキル情報 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">スキル</h5>
+                <button class="btn btn-sm btn-outline-primary" onclick="openSkillModal()">
+                    <i class="fas fa-plus"></i> スキル追加
+                </button>
+            </div>
+            <div class="card-body">
+                {% if staff.skills %}
+                    <div class="row">
+                        {% for skill in staff.skills %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-info me-2">{{ skill.skill_type.value }}</span>
+                                    <span class="badge bg-secondary">{{ skill.proficiency_level.value }}</span>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSkill({{ skill.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">スキル情報が登録されていません</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- プロフェッション情報 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">プロフェッション</h5>
+                <button class="btn btn-sm btn-outline-primary" onclick="openProfessionModal()">
+                    <i class="fas fa-plus"></i> プロフェッション追加
+                </button>
+            </div>
+            <div class="card-body">
+                {% if staff.professions %}
+                    <div class="row">
+                        {% for profession in staff.professions %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-warning me-2">{{ profession.profession_type.value }}</span>
+                                    <span class="text-muted">{{ profession.experience_years }}年経験</span>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteProfession({{ profession.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">プロフェッション情報が登録されていません</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 専門領域情報 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">専門領域</h5>
+                <button class="btn btn-sm btn-outline-primary" onclick="openDomainModal()">
+                    <i class="fas fa-plus"></i> 専門領域追加
+                </button>
+            </div>
+            <div class="card-body">
+                {% if staff.domains %}
+                    <div class="row">
+                        {% for domain in staff.domains %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-success me-2">{{ domain.domain_type.value }}</span>
+                                    <span class="badge bg-secondary">{{ domain.expertise_level.value }}</span>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteDomain({{ domain.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">専門領域情報が登録されていません</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- サイドバー -->
+    <div class="col-lg-4">
+        <!-- 稼働状況 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">稼働状況</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar" id="utilization-progress" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted small">現在の稼働率</p>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h6 class="text-primary" id="total-allocation">-</h6>
+                            <p class="text-muted small">総割合</p>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-success" id="available-capacity">-</h6>
+                            <p class="text-muted small">空き時間</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 現在のアサイン -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">現在のアサイン</h5>
+            </div>
+            <div class="card-body" id="current-assignments">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p class="text-muted small">読み込み中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- スキル追加モーダル -->
+<div class="modal fade" id="skillModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">スキル追加</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="skillForm">
+                    <div class="mb-3">
+                        <label for="skill_type" class="form-label">スキルタイプ</label>
+                        <select class="form-select" id="skill_type" name="skill_type" required>
+                            <option value="">選択してください</option>
+                            <option value="OPEN">オープン系</option>
+                            <option value="HOST">ホスト系</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="proficiency_level" class="form-label">習熟度レベル</label>
+                        <select class="form-select" id="proficiency_level" name="proficiency_level" required>
+                            <option value="">選択してください</option>
+                            <option value="BEGINNER">初級</option>
+                            <option value="INTERMEDIATE">中級</option>
+                            <option value="ADVANCED">上級</option>
+                            <option value="EXPERT">エキスパート</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="submitSkill()">追加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- プロフェッション追加モーダル -->
+<div class="modal fade" id="professionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">プロフェッション追加</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="professionForm">
+                    <div class="mb-3">
+                        <label for="profession_type" class="form-label">プロフェッションタイプ</label>
+                        <select class="form-select" id="profession_type" name="profession_type" required>
+                            <option value="">選択してください</option>
+                            <option value="EXPERT">有識者</option>
+                            <option value="PM">プロジェクトマネージャー</option>
+                            <option value="DESIGNER">設計者</option>
+                            <option value="DEVELOPER">開発者</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="experience_years" class="form-label">経験年数</label>
+                        <input type="number" class="form-control" id="experience_years" name="experience_years" min="0" max="50" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="submitProfession()">追加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 専門領域追加モーダル -->
+<div class="modal fade" id="domainModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">専門領域追加</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="domainForm">
+                    <div class="mb-3">
+                        <label for="domain_type" class="form-label">専門領域タイプ</label>
+                        <select class="form-select" id="domain_type" name="domain_type" required>
+                            <option value="">選択してください</option>
+                            <option value="PRODUCTION">生産管理</option>
+                            <option value="SALES">販売管理</option>
+                            <option value="PROCUREMENT">調達管理</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="expertise_level" class="form-label">専門性レベル</label>
+                        <select class="form-select" id="expertise_level" name="expertise_level" required>
+                            <option value="">選択してください</option>
+                            <option value="BEGINNER">初級</option>
+                            <option value="INTERMEDIATE">中級</option>
+                            <option value="ADVANCED">上級</option>
+                            <option value="EXPERT">エキスパート</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="submitDomain()">追加</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 稼働状況を読み込み
+    loadWorkloadData();
+});
+
+function loadWorkloadData() {
+    var today = new Date().toISOString().split('T')[0];
+    var nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    var endDate = nextMonth.toISOString().split('T')[0];
+    
+    $.get('/api/staff/{{ staff.id }}/workload', {
+        start_date: today,
+        end_date: endDate
+    })
+    .done(function(data) {
+        updateWorkloadDisplay(data);
+    })
+    .fail(function() {
+        $('#utilization-progress').html('<span class="text-danger">エラー</span>');
+        $('#current-assignments').html('<p class="text-danger">データの読み込みに失敗しました</p>');
+    });
+}
+
+function updateWorkloadDisplay(data) {
+    // 稼働率の表示
+    var utilization = Math.round(data.total_allocation * 100);
+    var progressBar = $('#utilization-progress');
+    
+    progressBar.css('width', utilization + '%');
+    progressBar.attr('aria-valuenow', utilization);
+    progressBar.html(utilization + '%');
+    
+    // プログレスバーの色を設定
+    progressBar.removeClass('bg-success bg-warning bg-danger');
+    if (utilization >= 90) {
+        progressBar.addClass('bg-danger');
+    } else if (utilization >= 70) {
+        progressBar.addClass('bg-warning');
+    } else {
+        progressBar.addClass('bg-success');
+    }
+    
+    // 総割合と空き時間の表示
+    $('#total-allocation').text((data.total_allocation * 100).toFixed(1) + '%');
+    $('#available-capacity').text((data.available_capacity * 100).toFixed(1) + '%');
+    
+    // 現在のアサイン表示
+    var assignmentsHtml = '';
+    if (data.assignments && data.assignments.length > 0) {
+        data.assignments.forEach(function(assignment) {
+            assignmentsHtml += `
+                <div class="mb-3">
+                    <h6 class="mb-1">
+                        <a href="/projects/${assignment.project.id}" class="text-decoration-none">
+                            ${assignment.project.project_name}
+                        </a>
+                    </h6>
+                    <p class="text-muted small mb-1">${assignment.project.project_code}</p>
+                    <div class="d-flex justify-content-between">
+                        <span class="badge bg-${assignment.assignment_type === 'FULL' ? 'primary' : 'info'}">
+                            ${assignment.assignment_type === 'FULL' ? 'フル' : 'パーシャル'}
+                        </span>
+                        <span class="text-muted">${(assignment.allocation_percentage * 100).toFixed(1)}%</span>
+                    </div>
+                    <div class="progress mt-2" style="height: 15px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: ${assignment.allocation_percentage * 100}%" 
+                             aria-valuenow="${assignment.allocation_percentage * 100}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        assignmentsHtml = '<p class="text-muted">現在アサインされている案件はありません</p>';
+    }
+    
+    $('#current-assignments').html(assignmentsHtml);
+}
+
+function openSkillModal() {
+    $('#skillModal').modal('show');
+}
+
+function openProfessionModal() {
+    $('#professionModal').modal('show');
+}
+
+function openDomainModal() {
+    $('#domainModal').modal('show');
+}
+
+function submitSkill() {
+    var formData = {
+        skill_type: $('#skill_type').val(),
+        proficiency_level: $('#proficiency_level').val()
+    };
+    
+    $.ajax({
+        url: '{{ url_for("add_staff_skill", staff_id=staff.id) }}',
+        method: 'POST',
+        data: formData,
+        success: function(response) {
+            $('#skillModal').modal('hide');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            alert('エラーが発生しました: ' + error);
+        }
+    });
+}
+
+function submitProfession() {
+    var formData = {
+        profession_type: $('#profession_type').val(),
+        experience_years: parseInt($('#experience_years').val())
+    };
+    
+    $.ajax({
+        url: '{{ url_for("add_staff_profession", staff_id=staff.id) }}',
+        method: 'POST',
+        data: formData,
+        success: function(response) {
+            $('#professionModal').modal('hide');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            alert('エラーが発生しました: ' + error);
+        }
+    });
+}
+
+function submitDomain() {
+    var formData = {
+        domain_type: $('#domain_type').val(),
+        expertise_level: $('#expertise_level').val()
+    };
+    
+    $.ajax({
+        url: '{{ url_for("add_staff_domain", staff_id=staff.id) }}',
+        method: 'POST',
+        data: formData,
+        success: function(response) {
+            $('#domainModal').modal('hide');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            alert('エラーが発生しました: ' + error);
+        }
+    });
+}
+
+function deleteSkill(skillId) {
+    if (confirm('このスキルを削除しますか？')) {
+        $.ajax({
+            url: '{{ url_for("delete_staff_skill", staff_id=staff.id) }}',
+            method: 'POST',
+            data: { skill_id: skillId },
+            success: function(response) {
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                alert('エラーが発生しました: ' + error);
+            }
+        });
+    }
+}
+
+function deleteProfession(professionId) {
+    if (confirm('このプロフェッションを削除しますか？')) {
+        $.ajax({
+            url: '{{ url_for("delete_staff_profession", staff_id=staff.id) }}',
+            method: 'POST',
+            data: { profession_id: professionId },
+            success: function(response) {
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                alert('エラーが発生しました: ' + error);
+            }
+        });
+    }
+}
+
+function deleteDomain(domainId) {
+    if (confirm('この専門領域を削除しますか？')) {
+        $.ajax({
+            url: '{{ url_for("delete_staff_domain", staff_id=staff.id) }}',
+            method: 'POST',
+            data: { domain_id: domainId },
+            success: function(response) {
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                alert('エラーが発生しました: ' + error);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

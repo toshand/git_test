@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv_html_converter/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+__pycache__/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Excel temporary files
+~$*.xlsx
+~$*.xls
+
+# Large media files (optional - uncomment if needed)
+# *.mp4
+# *.avi
+# *.mov
+
+# Config files with sensitive data (if any)
+# config/secrets.json

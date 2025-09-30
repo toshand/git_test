@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroMind Technologies - ホームページ紹介動画</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #0f172a;
+            color: white;
+            overflow: hidden;
+        }
+
+        .video-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #8b5cf6 100%);
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        .slide-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .slide-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .slide-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .slide-features {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .slide-visual {
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .mockup {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .mockup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9, #06b6d4, #8b5cf6);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+        }
+
+        .logo {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            z-index: 1000;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .slide-title {
+                font-size: 2.5rem;
+            }
+            
+            .slide-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .slide-features {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls {
+                bottom: 1rem;
+            }
+            
+            .slide-counter {
+                top: 1rem;
+                right: 1rem;
+            }
+            
+            .logo {
+                top: 1rem;
+                left: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="logo">AeroMind Technologies</div>
+    <div class="slide-counter" id="slideCounter">1 / 8</div>
+
+    <div class="video-container">
+        <!-- スライド1: オープニング -->
+        <div class="slide active" id="slide1">
+            <div class="slide-content">
+                <h1 class="slide-title">航空技術の未来を切り開く</h1>
+                <p class="slide-subtitle">AeroMind Technologies ホームページ紹介</p>
+                <div class="slide-visual">
+                    <div class="mockup"></div>
+                </div>
+                <p class="slide-description">
+                    革新的な航空技術開発で、安全で効率的な空の移動を実現する<br>
+                    未来志向の企業ホームページをご紹介します
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド2: デザインコンセプト -->
+        <div class="slide" id="slide2">
+            <div class="slide-content">
+                <h1 class="slide-title">未来感デザイン</h1>
+                <p class="slide-subtitle">航空技術企業にふさわしい革新的なデザイン</p>
+                <div class="slide-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🎨</span>
+                        サイバーライトブルー<br>グラデーション
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✨</span>
+                        ガラスモーフィズム<br>効果
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🚀</span>
+                        スムーズ<br>アニメーション
+                    </div>
+                </div>
+                <p class="slide-description">
+                    サイバーライトブルー、シアン、バイオレットの美しいグラデーションと<br>
+                    半透明効果による現代的なデザインで、技術革新のイメージを表現
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド3: ヒーローセクション -->
+        <div class="slide" id="slide3">
+            <div class="slide-content">
+                <h1 class="slide-title">ヒーローセクション</h1>
+                <p class="slide-subtitle">印象的な第一印象を演出</p>
+                <div class="slide-visual">
+                    <div class="mockup"></div>
+                </div>
+                <div class="slide-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🖼️</span>
+                        企業イメージ画像<br>背景
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📊</span>
+                        統計情報<br>オーバーレイ
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🎯</span>
+                        CTAボタン<br>配置
+                    </div>
+                </div>
+                <p class="slide-description">
+                    企業イメージ画像を背景に、重要な統計情報と<br>
+                    明確な行動喚起ボタンで訪問者の注目を集めます
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド4: 会社概要 -->
+        <div class="slide" id="slide4">
+            <div class="slide-content">
+                <h1 class="slide-title">会社概要セクション</h1>
+                <p class="slide-subtitle">企業の理念と価値観を視覚的に表現</p>
+                <div class="slide-visual">
+                    <div class="mockup"></div>
+                </div>
+                <div class="slide-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">✈️</span>
+                        企業理念<br>航空技術革新
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🎯</span>
+                        ビジョン<br>世界リーダー
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🤝</span>
+                        価値観<br>安全性・革新性
+                    </div>
+                </div>
+                <p class="slide-description">
+                    2カラムレイアウトで企業イメージ画像と<br>
+                    企業理念・ビジョン・価値観を効果的に配置
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド5: 事業内容 -->
+        <div class="slide" id="slide5">
+            <div class="slide-content">
+                <h1 class="slide-title">事業内容セクション</h1>
+                <p class="slide-subtitle">3つの主要事業を分かりやすく紹介</p>
+                <div class="slide-visual">
+                    <div class="mockup"></div>
+                </div>
+                <div class="slide-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🔬</span>
+                        航空技術開発<br>研究開発
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✈️</span>
+                        航空事業運営<br>事業モデル
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">💼</span>
+                        技術コンサルティング<br>専門知識
+                    </div>
+                </div>
+                <p class="slide-description">
+                    3カラムグリッドで各事業の特徴を明確に表示し、<br>
+                    グラデーションボーダーで視覚的な魅力を向上
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド6: レスポンシブ対応 -->
+        <div class="slide" id="slide6">
+            <div class="slide-content">
+                <h1 class="slide-title">レスポンシブデザイン</h1>
+                <p class="slide-subtitle">すべてのデバイスで最適な体験を提供</p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">デバイス対応</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">ブレークポイント</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">4</div>
+                        <div class="stat-label">画面サイズ</div>
+                    </div>
+                </div>
+                <p class="slide-description">
+                    デスクトップ、タブレット、モバイル、小型モバイルの<br>
+                    4つの画面サイズで最適化された表示を実現
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド7: 技術仕様 -->
+        <div class="slide" id="slide7">
+            <div class="slide-content">
+                <h1 class="slide-title">技術仕様</h1>
+                <p class="slide-subtitle">最新技術を活用した高品質な実装</p>
+                <div class="slide-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">⚡</span>
+                        HTML5<br>セマンティック
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🎨</span>
+                        CSS3<br>Grid・Flexbox
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔧</span>
+                        JavaScript<br>ES6+
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📱</span>
+                        レスポンシブ<br>モバイルファースト
+                    </div>
+                </div>
+                <p class="slide-description">
+                    最新のWeb技術を活用し、高速で安全な<br>
+                    ユーザー体験を提供する技術基盤
+                </p>
+            </div>
+        </div>
+
+        <!-- スライド8: クロージング -->
+        <div class="slide" id="slide8">
+            <div class="slide-content">
+                <h1 class="slide-title">未来への第一歩</h1>
+                <p class="slide-subtitle">AeroMind Technologies ホームページ</p>
+                <div class="slide-visual">
+                    <div class="mockup"></div>
+                </div>
+                <p class="slide-description">
+                    航空技術の未来を切り開く企業として、<br>
+                    革新的で魅力的なホームページを実現しました
+                </p>
+                <div class="slide-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🚀</span>
+                        革新的デザイン
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📱</span>
+                        完全レスポンシブ
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">⚡</span>
+                        高速パフォーマンス
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" id="prevBtn">前へ</button>
+        <button class="control-btn" id="playPauseBtn">再生</button>
+        <button class="control-btn" id="nextBtn">次へ</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        let isPlaying = false;
+        let slideInterval;
+        const totalSlides = 8;
+        const slideDuration = 5000; // 5秒
+
+        const slides = document.querySelectorAll('.slide');
+        const progressFill = document.getElementById('progressFill');
+        const slideCounter = document.getElementById('slideCounter');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+
+        function showSlide(index) {
+            // すべてのスライドを非アクティブに
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active', 'prev');
+                if (i < index) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            // 現在のスライドをアクティブに
+            slides[index].classList.add('active');
+
+            // プログレスバーを更新
+            const progress = ((index + 1) / totalSlides) * 100;
+            progressFill.style.width = progress + '%';
+
+            // スライドカウンターを更新
+            slideCounter.textContent = `${index + 1} / ${totalSlides}`;
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                pauseSlideshow();
+            } else {
+                playSlideshow();
+            }
+        }
+
+        function playSlideshow() {
+            isPlaying = true;
+            playPauseBtn.textContent = '一時停止';
+            slideInterval = setInterval(nextSlide, slideDuration);
+        }
+
+        function pauseSlideshow() {
+            isPlaying = false;
+            playPauseBtn.textContent = '再生';
+            clearInterval(slideInterval);
+        }
+
+        // イベントリスナー
+        prevBtn.addEventListener('click', () => {
+            pauseSlideshow();
+            prevSlide();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            pauseSlideshow();
+            nextSlide();
+        });
+
+        playPauseBtn.addEventListener('click', togglePlayPause);
+
+        // キーボードナビゲーション
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    pauseSlideshow();
+                    prevSlide();
+                    break;
+                case 'ArrowRight':
+                    pauseSlideshow();
+                    nextSlide();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    togglePlayPause();
+                    break;
+            }
+        });
+
+        // 自動再生開始
+        setTimeout(() => {
+            playSlideshow();
+        }, 2000);
+
+        // 初期化
+        showSlide(0);
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}アサイン新規作成 - 要員アサイン管理システム{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">アサイン新規作成</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('assignment_list') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 一覧に戻る
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">アサイン情報</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="staff_id" class="form-label">要員 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="staff_id" name="staff_id" required>
+                                <option value="">選択してください</option>
+                                {% for staff in staff_list %}
+                                <option value="{{ staff.id }}">{{ staff.name }} ({{ staff.employee_id }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="project_id" class="form-label">案件 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="project_id" name="project_id" required>
+                                <option value="">選択してください</option>
+                                {% for project in project_list %}
+                                <option value="{{ project.id }}">{{ project.project_name }} ({{ project.project_code }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="assignment_type" class="form-label">アサインタイプ <span class="text-danger">*</span></label>
+                            <select class="form-select" id="assignment_type" name="assignment_type" required>
+                                <option value="">選択してください</option>
+                                <option value="FULL">フルアサイン</option>
+                                <option value="PARTIAL">パーシャルアサイン</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="allocation_percentage" class="form-label">割合 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="allocation_percentage" name="allocation_percentage" 
+                                       min="0" max="100" step="0.1" value="100" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="start_date" class="form-label">開始日 <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="end_date" class="form-label">終了日 <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="assigned_hours" class="form-label">アサイン工数（時間）</label>
+                        <input type="number" class="form-control" id="assigned_hours" name="assigned_hours" min="0" value="0">
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('assignment_list') }}" class="btn btn-outline-secondary me-md-2">キャンセル</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 作成
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">アサインタイプについて</h5>
+            </div>
+            <div class="card-body">
+                <h6>フルアサイン</h6>
+                <p class="text-muted small">
+                    要員の100%の時間を案件に割り当てます。他の案件へのアサインはできません。
+                </p>
+                
+                <h6>パーシャルアサイン</h6>
+                <p class="text-muted small">
+                    要員の一部の時間を案件に割り当てます。空き時間に他の案件へのアサインが可能です。
+                </p>
+                
+                <div class="alert alert-info small">
+                    <i class="fas fa-info-circle"></i>
+                    パーシャルアサインの場合、割合は0.1%〜99.9%の範囲で設定してください。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // アサインタイプに応じて割合の制限を設定
+    $('#assignment_type').change(function() {
+        var type = $(this).val();
+        var allocationInput = $('#allocation_percentage');
+        
+        if (type === 'FULL') {
+            allocationInput.val('100').prop('readonly', true);
+        } else if (type === 'PARTIAL') {
+            allocationInput.prop('readonly', false);
+        }
+    });
+    
+    // 初期状態でフルアサインが選択されている場合の処理
+    if ($('#assignment_type').val() === 'FULL') {
+        $('#allocation_percentage').prop('readonly', true);
+    }
+});
+</script>
+{% endblock %}

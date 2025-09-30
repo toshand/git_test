@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}案件進捗レポート - 要員アサイン管理システム{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">案件進捗レポート</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button class="btn btn-outline-primary" onclick="exportReport()">
+            <i class="fas fa-download"></i> エクスポート
+        </button>
+    </div>
+</div>
+
+<!-- フィルター -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row g-3">
+            <div class="col-md-3">
+                <label for="status_filter" class="form-label">ステータス</label>
+                <select class="form-select" id="status_filter" name="status">
+                    <option value="">すべて</option>
+                    <option value="PLANNING">計画中</option>
+                    <option value="ACTIVE">進行中</option>
+                    <option value="SUSPENDED">一時停止</option>
+                    <option value="COMPLETED">完了</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="start_date" class="form-label">開始日（以降）</label>
+                <input type="date" class="form-control" id="start_date" name="start_date">
+            </div>
+            <div class="col-md-3">
+                <label for="end_date" class="form-label">終了日（以前）</label>
+                <input type="date" class="form-control" id="end_date" name="end_date">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary" onclick="updateReport()">
+                    <i class="fas fa-search"></i> 更新
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 案件サマリー -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">総案件数</h5>
+                <h3 class="text-primary">{{ projects|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">進行中</h5>
+                <h3 class="text-success" id="active-projects">-</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">計画中</h5>
+                <h3 class="text-warning" id="planning-projects">-</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">完了</h5>
+                <h3 class="text-info" id="completed-projects">-</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 案件一覧 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">案件一覧</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>案件コード</th>
+                        <th>案件名</th>
+                        <th>ステータス</th>
+                        <th>期間</th>
+                        <th>総工数</th>
+                        <th>アサイン数</th>
+                        <th>進捗率</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>{{ project.project_code }}</td>
+                        <td>
+                            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="text-decoration-none">
+                                {{ project.project_name }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if project.status.value == 'PLANNING' %}
+                                <span class="badge bg-secondary">計画中</span>
+                            {% elif project.status.value == 'ACTIVE' %}
+                                <span class="badge bg-success">進行中</span>
+                            {% elif project.status.value == 'SUSPENDED' %}
+                                <span class="badge bg-warning">一時停止</span>
+                            {% elif project.status.value == 'COMPLETED' %}
+                                <span class="badge bg-primary">完了</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if project.start_date and project.end_date %}
+                                {{ project.start_date.strftime('%Y/%m/%d') }} - {{ project.end_date.strftime('%Y/%m/%d') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ project.total_hours }}h</td>
+                        <td>{{ project.assignments|length }}</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+                                    60%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('assignment_match', project_id=project.id) }}" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-search"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">
+                            案件が見つかりません
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    updateReport();
+});
+
+function updateReport() {
+    // サマリー統計を計算
+    var totalProjects = {{ projects|length }};
+    var activeProjects = 0;
+    var planningProjects = 0;
+    var completedProjects = 0;
+    
+    {% for project in projects %}
+        {% if project.status.value == 'ACTIVE' %}
+            activeProjects++;
+        {% elif project.status.value == 'PLANNING' %}
+            planningProjects++;
+        {% elif project.status.value == 'COMPLETED' %}
+            completedProjects++;
+        {% endif %}
+    {% endfor %}
+    
+    $('#active-projects').text(activeProjects);
+    $('#planning-projects').text(planningProjects);
+    $('#completed-projects').text(completedProjects);
+}
+
+function exportReport() {
+    // レポートエクスポート機能
+    alert('レポートエクスポート機能は実装中です');
+}
+</script>
+{% endblock %}

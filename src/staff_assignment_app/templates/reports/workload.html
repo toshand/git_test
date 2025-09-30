@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}稼働状況レポート - 要員アサイン管理システム{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">稼働状況レポート</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button class="btn btn-outline-primary" onclick="exportReport()">
+            <i class="fas fa-download"></i> エクスポート
+        </button>
+    </div>
+</div>
+
+<!-- フィルター -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row g-3">
+            <div class="col-md-3">
+                <label for="start_date" class="form-label">開始日</label>
+                <input type="date" class="form-control" id="start_date" name="start_date">
+            </div>
+            <div class="col-md-3">
+                <label for="end_date" class="form-label">終了日</label>
+                <input type="date" class="form-control" id="end_date" name="end_date">
+            </div>
+            <div class="col-md-3">
+                <label for="company_type" class="form-label">会社タイプ</label>
+                <select class="form-select" id="company_type" name="company_type">
+                    <option value="">すべて</option>
+                    <option value="KOBELCO">コベルコシステム</option>
+                    <option value="PARTNER">パートナー企業</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary" onclick="updateReport()">
+                    <i class="fas fa-search"></i> 更新
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 稼働状況サマリー -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">総要員数</h5>
+                <h3 class="text-primary" id="total-staff">{{ staff_list|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">稼働中</h5>
+                <h3 class="text-success" id="active-staff">-</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">空き時間あり</h5>
+                <h3 class="text-warning" id="available-staff">-</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">平均稼働率</h5>
+                <h3 class="text-info" id="avg-utilization">-</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 稼働状況詳細 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">要員別稼働状況</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="workload-table">
+                <thead>
+                    <tr>
+                        <th>要員</th>
+                        <th>会社</th>
+                        <th>現在のアサイン</th>
+                        <th>稼働率</th>
+                        <th>空き時間</th>
+                        <th>次回アサイン可能日</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff in staff_list %}
+                    <tr data-staff-id="{{ staff.id }}">
+                        <td>
+                            <strong>{{ staff.name }}</strong><br>
+                            <small class="text-muted">{{ staff.employee_id }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if staff.company_type.value == 'KOBELCO' %}primary{% else %}secondary{% endif %}">
+                                {{ 'コベルコシステム' if staff.company_type.value == 'KOBELCO' else 'パートナー' }}
+                            </span>
+                        </td>
+                        <td class="assignments">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </td>
+                        <td class="utilization">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%" id="utilization-{{ staff.id }}">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="availability">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </td>
+                        <td class="next-available">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // デフォルトの日付を設定
+    var today = new Date();
+    var nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    
+    $('#start_date').val(today.toISOString().split('T')[0]);
+    $('#end_date').val(nextMonth.toISOString().split('T')[0]);
+    
+    // 初期レポートを読み込み
+    updateReport();
+});
+
+function updateReport() {
+    var startDate = $('#start_date').val();
+    var endDate = $('#end_date').val();
+    var companyType = $('#company_type').val();
+    
+    // 各要員の稼働状況を取得
+    $('#workload-table tbody tr').each(function() {
+        var staffId = $(this).data('staff-id');
+        loadStaffWorkload(staffId, startDate, endDate);
+    });
+    
+    // サマリーを更新
+    updateSummary();
+}
+
+function loadStaffWorkload(staffId, startDate, endDate) {
+    $.get('/api/staff/' + staffId + '/workload', {
+        start_date: startDate,
+        end_date: endDate
+    })
+    .done(function(data) {
+        var row = $('tr[data-staff-id="' + staffId + '"]');
+        
+        // アサイン情報を表示
+        var assignmentsHtml = '';
+        if (data.assignments && data.assignments.length > 0) {
+            data.assignments.forEach(function(assignment) {
+                assignmentsHtml += '<span class="badge bg-primary me-1">' + 
+                    assignment.project.project_name + ' (' + 
+                    Math.round(assignment.allocation_percentage * 100) + '%)</span>';
+            });
+        } else {
+            assignmentsHtml = '<span class="text-muted">アサインなし</span>';
+        }
+        row.find('.assignments').html(assignmentsHtml);
+        
+        // 稼働率を表示
+        var utilization = Math.round(data.total_allocation * 100);
+        var progressBar = row.find('.utilization .progress-bar');
+        progressBar.css('width', utilization + '%');
+        progressBar.attr('aria-valuenow', utilization);
+        progressBar.html(utilization + '%');
+        progressBar.removeClass('bg-success bg-warning bg-danger');
+        if (utilization >= 90) {
+            progressBar.addClass('bg-danger');
+        } else if (utilization >= 70) {
+            progressBar.addClass('bg-warning');
+        } else {
+            progressBar.addClass('bg-success');
+        }
+        
+        // 空き時間を表示
+        var availability = Math.round(data.available_capacity * 100);
+        row.find('.availability').html(availability + '%');
+        
+        // 次回アサイン可能日を表示
+        if (data.is_fully_allocated) {
+            row.find('.next-available').html('<span class="text-danger">満員</span>');
+        } else {
+            row.find('.next-available').html('<span class="text-success">即座に可能</span>');
+        }
+    })
+    .fail(function() {
+        var row = $('tr[data-staff-id="' + staffId + '"]');
+        row.find('.assignments').html('<span class="text-danger">エラー</span>');
+        row.find('.availability').html('<span class="text-danger">エラー</span>');
+        row.find('.next-available').html('<span class="text-danger">エラー</span>');
+    });
+}
+
+function updateSummary() {
+    // サマリー統計を計算
+    var totalStaff = $('#workload-table tbody tr').length;
+    var activeStaff = 0;
+    var availableStaff = 0;
+    var totalUtilization = 0;
+    
+    $('#workload-table tbody tr').each(function() {
+        var utilizationText = $(this).find('.utilization .progress-bar').text();
+        var utilization = parseInt(utilizationText.replace('%', '')) || 0;
+        var availabilityText = $(this).find('.availability').text();
+        var availability = parseInt(availabilityText.replace('%', '')) || 0;
+        
+        if (utilization > 0) activeStaff++;
+        if (availability > 0) availableStaff++;
+        totalUtilization += utilization;
+    });
+    
+    $('#active-staff').text(activeStaff);
+    $('#available-staff').text(availableStaff);
+    $('#avg-utilization').text(Math.round(totalUtilization / totalStaff) + '%');
+}
+
+function exportReport() {
+    // レポートエクスポート機能
+    alert('レポートエクスポート機能は実装中です');
+}
+</script>
+{% endblock %}

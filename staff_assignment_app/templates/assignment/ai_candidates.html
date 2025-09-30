@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}AI候補選定 - 要員アサイン管理システム（生成AI版）{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-robot"></i> AI候補選定
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 案件詳細に戻る
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 案件情報 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-project-diagram"></i> 対象案件
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>{{ project.project_name }}</h6>
+                        <p class="text-muted mb-0">{{ project.project_code }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>ステータス:</strong> 
+                            <span class="badge bg-{{ 'success' if project.status.value == 'ACTIVE' else 'secondary' }}">
+                                {{ project.status.value }}
+                            </span>
+                        </p>
+                        {% if project.start_date and project.end_date %}
+                        <p class="mb-0"><strong>期間:</strong> {{ project.start_date }} ～ {{ project.end_date }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 検索条件 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-filter"></i> 検索条件
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="year" class="form-label">年</label>
+                        <select class="form-select" id="year" name="year">
+                            {% for year in range(2023, 2026) %}
+                            <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="month" class="form-label">月</label>
+                        <select class="form-select" id="month" name="month">
+                            {% for month in range(1, 13) %}
+                            <option value="{{ month }}" {% if month == selected_month %}selected{% endif %}>{{ month }}月</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> 再検索
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI候補リスト -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-users"></i> AI候補リスト
+                    <span class="badge bg-primary ms-2">{{ candidates|length }}名</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if candidates %}
+                    <div class="row">
+                        {% for candidate in candidates %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user"></i> {{ candidate.staff.name }}
+                                        <span class="badge bg-{{ 'primary' if candidate.staff.company_type.value == 'KOBELCO' else 'secondary' }} ms-2">
+                                            {{ 'コベルコ' if candidate.staff.company_type.value == 'KOBELCO' else 'パートナー' }}
+                                        </span>
+                                    </h6>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-success me-2">AI スコア: {{ "%.1f"|format(candidate.ai_score * 100) }}%</span>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="selectCandidate({{ candidate.staff.id }})">
+                                            <i class="fas fa-check"></i> 選択
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- 稼働状況 -->
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">稼働状況</h6>
+                                        <div class="progress mb-2" style="height: 20px;">
+                                            <div class="progress-bar bg-{{ 'danger' if candidate.workload.total_allocation >= 0.8 else 'warning' if candidate.workload.total_allocation >= 0.5 else 'success' }}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ candidate.workload.total_allocation * 100 }}%">
+                                                稼働率: {{ "%.1f"|format(candidate.workload.total_allocation * 100) }}%
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            空き時間: {{ "%.1f"|format(candidate.workload.available_capacity * 100) }}%
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- マッチング詳細 -->
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">マッチング詳細</h6>
+                                        {% if candidate.match_details.domains %}
+                                        <div class="mb-2">
+                                            <strong>専門領域:</strong>
+                                            {% for domain in candidate.match_details.domains %}
+                                            <span class="badge bg-info me-1">
+                                                {{ domain.domain }} ({{ "%.1f"|format(domain.score * 100) }}%)
+                                            </span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if candidate.match_details.skills %}
+                                        <div class="mb-2">
+                                            <strong>スキル:</strong>
+                                            {% for skill in candidate.match_details.skills %}
+                                            <span class="badge bg-warning me-1">
+                                                {{ skill.skill }} ({{ "%.1f"|format(skill.score * 100) }}%)
+                                            </span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if candidate.match_details.professions %}
+                                        <div class="mb-2">
+                                            <strong>プロフェッション:</strong>
+                                            {% for profession in candidate.match_details.professions %}
+                                            <span class="badge bg-success me-1">
+                                                {{ profession.profession }} ({{ "%.1f"|format(profession.score * 100) }}%)
+                                            </span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- 推奨理由 -->
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">推奨理由</h6>
+                                        <p class="text-muted small">{{ candidate.recommendation_reason }}</p>
+                                    </div>
+                                    
+                                    <!-- 現在のアサイン -->
+                                    {% if candidate.workload.assignments %}
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">現在のアサイン</h6>
+                                        {% for assignment in candidate.workload.assignments %}
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <small>{{ assignment.project.project_name }}</small>
+                                            <span class="badge bg-secondary">{{ "%.1f"|format(assignment.allocation_percentage * 100) }}%</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex justify-content-between">
+                                        <a href="{{ url_for('staff_detail', staff_id=candidate.staff.id) }}" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-eye"></i> 詳細
+                                        </a>
+                                        <button class="btn btn-sm btn-primary" onclick="createAssignment({{ candidate.staff.id }})">
+                                            <i class="fas fa-plus"></i> アサイン作成
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-search fa-3x mb-3"></i>
+                        <h5>AI候補が見つかりませんでした</h5>
+                        <p>検索条件を変更して再度お試しください。</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- アサイン作成モーダル -->
+<div class="modal fade" id="assignmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus"></i> アサイン作成
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="assignmentForm" method="POST" action="{{ url_for('assignment_new') }}">
+                <div class="modal-body">
+                    <input type="hidden" id="staffId" name="staff_id">
+                    <input type="hidden" name="project_id" value="{{ project.id }}">
+                    <input type="hidden" name="year" value="{{ selected_year }}">
+                    <input type="hidden" name="month" value="{{ selected_month }}">
+                    
+                    <div class="mb-3">
+                        <label for="assignmentType" class="form-label">アサインタイプ</label>
+                        <select class="form-select" id="assignmentType" name="assignment_type" required>
+                            <option value="FULL">フルアサイン</option>
+                            <option value="PARTIAL">パーシャルアサイン</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="allocationPercentage" class="form-label">割合 (%)</label>
+                        <input type="number" class="form-control" id="allocationPercentage" name="allocation_percentage" 
+                               min="1" max="100" value="100" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="assignedHours" class="form-label">アサイン工数 (時間)</label>
+                        <input type="number" class="form-control" id="assignedHours" name="assigned_hours" 
+                               min="1" value="160" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> アサイン作成
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function selectCandidate(staffId) {
+    // 候補選択時の処理
+    alert(`要員ID ${staffId} が選択されました。`);
+}
+
+function createAssignment(staffId) {
+    document.getElementById('staffId').value = staffId;
+    $('#assignmentModal').modal('show');
+}
+
+// アサインタイプ変更時の処理
+document.getElementById('assignmentType').addEventListener('change', function() {
+    const allocationInput = document.getElementById('allocationPercentage');
+    if (this.value === 'FULL') {
+        allocationInput.value = 100;
+        allocationInput.readOnly = true;
+    } else {
+        allocationInput.readOnly = false;
+    }
+});
+
+// 割合変更時の処理
+document.getElementById('allocationPercentage').addEventListener('change', function() {
+    const assignmentType = document.getElementById('assignmentType');
+    if (parseInt(this.value) === 100) {
+        assignmentType.value = 'FULL';
+    } else {
+        assignmentType.value = 'PARTIAL';
+    }
+});
+</script>
+{% endblock %}

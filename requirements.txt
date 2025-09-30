@@ -1,0 +1,13 @@
+psycopg2-binary==2.9.9
+# 代替案: asyncpg==0.29.0  # 非同期版
+# 代替案: pg8000==1.30.3   # 純粋Python版
+
+# アニメーションGIF作成ツール用
+Pillow==10.0.1
+
+# HTMLからExcel変換用
+pandas==2.1.4
+openpyxl==3.1.2
+beautifulsoup4==4.12.2
+lxml==4.9.3
+html5lib==1.1

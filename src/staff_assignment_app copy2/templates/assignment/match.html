@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}要員マッチング - 要員アサイン管理システム{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">要員マッチング</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 案件詳細に戻る
+        </a>
+    </div>
+</div>
+
+<!-- 案件情報 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">対象案件</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h4>{{ project.project_name }}</h4>
+                <p class="text-muted">{{ project.project_code }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>ステータス:</strong> 
+                    {% if project.status.value == 'PLANNING' %}
+                        <span class="badge bg-secondary">計画中</span>
+                    {% elif project.status.value == 'ACTIVE' %}
+                        <span class="badge bg-success">進行中</span>
+                    {% elif project.status.value == 'SUSPENDED' %}
+                        <span class="badge bg-warning">一時停止</span>
+                    {% elif project.status.value == 'COMPLETED' %}
+                        <span class="badge bg-primary">完了</span>
+                    {% endif %}
+                </p>
+                <p><strong>総工数:</strong> {{ project.total_hours }}時間</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- マッチング結果 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">マッチング結果</h5>
+    </div>
+    <div class="card-body">
+        {% if matches %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>順位</th>
+                            <th>要員</th>
+                            <th>会社</th>
+                            <th>スキル</th>
+                            <th>専門領域</th>
+                            <th>プロフェッション</th>
+                            <th>マッチスコア</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in matches %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-{% if loop.index <= 3 %}success{% elif loop.index <= 5 %}warning{% else %}secondary{% endif %}">
+                                    {{ loop.index }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong>{{ match.staff.name }}</strong><br>
+                                <small class="text-muted">{{ match.staff.employee_id }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if match.staff.company_type.value == 'KOBELCO' %}primary{% else %}secondary{% endif %}">
+                                    {{ 'コベルコシステム' if match.staff.company_type.value == 'KOBELCO' else 'パートナー' }}
+                                </span>
+                            </td>
+                            <td>
+                                {% for skill in match.staff.skills %}
+                                    <span class="badge bg-info me-1">{{ skill.skill_type.value }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for domain in match.staff.domains %}
+                                    <span class="badge bg-success me-1">{{ domain.domain_type.value }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for profession in match.staff.professions %}
+                                    <span class="badge bg-warning me-1">{{ profession.profession_type.value }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ match.score * 100 }}%" 
+                                         aria-valuenow="{{ match.score * 100 }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ (match.score * 100)|round(1) }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="createAssignment({{ match.staff.id }}, {{ project.id }})">
+                                    <i class="fas fa-plus"></i> アサイン作成
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">マッチする要員が見つかりませんでした</h5>
+                <p class="text-muted">案件要件を確認するか、要員のスキル・専門領域を確認してください。</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- アサイン作成モーダル -->
+<div class="modal fade" id="assignmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">アサイン作成</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="assignmentForm">
+                    <input type="hidden" id="modal_staff_id" name="staff_id">
+                    <input type="hidden" id="modal_project_id" name="project_id">
+                    
+                    <div class="mb-3">
+                        <label for="modal_assignment_type" class="form-label">アサインタイプ</label>
+                        <select class="form-select" id="modal_assignment_type" name="assignment_type" required>
+                            <option value="FULL">フルアサイン</option>
+                            <option value="PARTIAL">パーシャルアサイン</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="modal_allocation_percentage" class="form-label">割合（%）</label>
+                        <input type="number" class="form-control" id="modal_allocation_percentage" 
+                               name="allocation_percentage" min="0.1" max="100" step="0.1" value="100" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="modal_start_date" class="form-label">開始日</label>
+                            <input type="date" class="form-control" id="modal_start_date" name="start_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="modal_end_date" class="form-label">終了日</label>
+                            <input type="date" class="form-control" id="modal_end_date" name="end_date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="modal_assigned_hours" class="form-label">アサイン工数（時間）</label>
+                        <input type="number" class="form-control" id="modal_assigned_hours" name="assigned_hours" min="0" value="0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="submitAssignment()">アサイン作成</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function createAssignment(staffId, projectId) {
+    $('#modal_staff_id').val(staffId);
+    $('#modal_project_id').val(projectId);
+    
+    // 今日の日付を設定
+    var today = new Date().toISOString().split('T')[0];
+    $('#modal_start_date').val(today);
+    
+    $('#assignmentModal').modal('show');
+}
+
+function submitAssignment() {
+    var formData = {
+        staff_id: $('#modal_staff_id').val(),
+        project_id: $('#modal_project_id').val(),
+        assignment_type: $('#modal_assignment_type').val(),
+        allocation_percentage: parseFloat($('#modal_allocation_percentage').val()) / 100,
+        start_date: $('#modal_start_date').val(),
+        end_date: $('#modal_end_date').val(),
+        assigned_hours: parseInt($('#modal_assigned_hours').val())
+    };
+    
+    // フォームデータを送信
+    $.ajax({
+        url: '{{ url_for("assignment_new") }}',
+        method: 'POST',
+        data: formData,
+        success: function(response) {
+            $('#assignmentModal').modal('hide');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            alert('エラーが発生しました: ' + error);
+        }
+    });
+}
+
+$(document).ready(function() {
+    // アサインタイプに応じて割合の制限を設定
+    $('#modal_assignment_type').change(function() {
+        var type = $(this).val();
+        var allocationInput = $('#modal_allocation_percentage');
+        
+        if (type === 'FULL') {
+            allocationInput.val('100').prop('readonly', true);
+        } else if (type === 'PARTIAL') {
+            allocationInput.prop('readonly', false);
+        }
+    });
+});
+</script>
+{% endblock %}

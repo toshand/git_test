@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ようこそ - ホームページ</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">MyWebsite</div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">ホーム</a></li>
+                <li><a href="#about" class="nav-link">概要</a></li>
+                <li><a href="#services" class="nav-link">サービス</a></li>
+                <li><a href="#contact" class="nav-link">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">ようこそ</h1>
+                <p class="hero-subtitle">シンプルで美しいホームページへ</p>
+                <button class="cta-button">詳細を見る</button>
+            </div>
+        </section>
+
+        <section id="about" class="section">
+            <div class="container">
+                <h2 class="section-title">概要</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>このホームページは、シンプルで美しいデザインを心がけて作成されています。モダンなWeb技術を使用し、ユーザビリティを重視した構成になっています。</p>
+                        <p>レスポンシブデザインにより、様々なデバイスで快適に閲覧できるようになっています。</p>
+                    </div>
+                    <div class="about-features">
+                        <div class="feature">
+                            <div class="feature-icon">🚀</div>
+                            <h3>高速</h3>
+                            <p>軽量で高速な読み込み</p>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">📱</div>
+                            <h3>レスポンシブ</h3>
+                            <p>あらゆるデバイスに対応</p>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">🎨</div>
+                            <h3>美しい</h3>
+                            <p>モダンなデザイン</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="services" class="section bg-light">
+            <div class="container">
+                <h2 class="section-title">サービス</h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon">💻</div>
+                        <h3>Web開発</h3>
+                        <p>モダンなWebサイトやWebアプリケーションの開発を行います。</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">🎯</div>
+                        <h3>UI/UXデザイン</h3>
+                        <p>ユーザー体験を重視したインターフェースデザインを提供します。</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">🔧</div>
+                        <h3>保守・サポート</h3>
+                        <p>システムの保守運用と技術サポートを提供します。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="section">
+            <div class="container">
+                <h2 class="section-title">お問い合わせ</h2>
+                <div class="contact-content">
+                    <form class="contact-form">
+                        <div class="form-group">
+                            <label for="name">お名前</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">メールアドレス</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">メッセージ</label>
+                            <textarea id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-button">送信</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 MyWebsite. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>

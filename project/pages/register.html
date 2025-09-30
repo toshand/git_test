@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規登録 - AeroMind Technologies</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .register-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .register-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a365d;
+            margin-bottom: 0.5rem;
+        }
+
+        .register-subtitle {
+            color: #718096;
+            font-size: 1rem;
+        }
+
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #e53e3e;
+        }
+
+        .form-error {
+            color: #e53e3e;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .password-requirements {
+            background: #f7fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .password-requirements h4 {
+            font-size: 0.9rem;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .password-requirements ul {
+            margin: 0;
+            padding-left: 1.2rem;
+            font-size: 0.8rem;
+            color: #4a5568;
+        }
+
+        .password-requirements li {
+            margin-bottom: 0.25rem;
+        }
+
+        .password-requirements li.valid {
+            color: #38a169;
+        }
+
+        .password-requirements li.invalid {
+            color: #e53e3e;
+        }
+
+        .register-button {
+            background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+            color: white !important;
+            padding: 1.2rem 2rem;
+            border: 2px solid #3182ce;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: block;
+            min-height: 60px;
+            box-shadow: 0 6px 20px rgba(49, 130, 206, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .register-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(49, 130, 206, 0.3);
+        }
+
+        .register-button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .button-container {
+            margin-top: 2rem;
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .button-text {
+            display: inline-block;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .login-link a {
+            color: #3182ce;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .success-message {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            color: #22543d;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #742a2a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .register-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .register-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <img src="../images/logo.svg" alt="AeroMind Technologies Logo" class="logo-image">
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../index.html" class="nav-link">ホーム</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="policy.html" class="nav-link">会社ポリシー</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="onboarding.html" class="nav-link">オンボーディング</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="organization.html" class="nav-link">組織情報</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="finance.html" class="nav-link">財務戦略</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="register.html" class="nav-link active">新規登録</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <div class="container">
+            <div class="register-container">
+                <div class="register-header">
+                    <h1 class="register-title">新規登録</h1>
+                    <p class="register-subtitle">AeroMind Technologiesに参加して、航空技術の未来を共に築きましょう</p>
+                </div>
+
+                <!-- 成功メッセージ -->
+                <div class="success-message" id="successMessage">
+                    <strong>登録完了！</strong> アカウントが正常に作成されました。ログインしてサービスをご利用ください。
+                </div>
+
+                <!-- エラーメッセージ -->
+                <div class="error-message" id="errorMessage">
+                    <strong>エラーが発生しました。</strong> <span id="errorText"></span>
+                </div>
+
+                <form class="register-form" id="registerForm">
+                    <div class="form-group">
+                        <label for="firstName" class="form-label">姓 *</label>
+                        <input type="text" id="firstName" name="firstName" class="form-input" required>
+                        <div class="form-error" id="firstNameError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName" class="form-label">名 *</label>
+                        <input type="text" id="lastName" name="lastName" class="form-input" required>
+                        <div class="form-error" id="lastNameError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">メールアドレス *</label>
+                        <input type="email" id="email" name="email" class="form-input" required>
+                        <div class="form-error" id="emailError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone" class="form-label">電話番号</label>
+                        <input type="tel" id="phone" name="phone" class="form-input" placeholder="090-1234-5678">
+                        <div class="form-error" id="phoneError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department" class="form-label">部署・部門</label>
+                        <select id="department" name="department" class="form-input">
+                            <option value="">選択してください</option>
+                            <option value="engineering">エンジニアリング</option>
+                            <option value="research">研究開発</option>
+                            <option value="operations">運営</option>
+                            <option value="marketing">マーケティング</option>
+                            <option value="hr">人事</option>
+                            <option value="finance">財務</option>
+                            <option value="other">その他</option>
+                        </select>
+                        <div class="form-error" id="departmentError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">パスワード *</label>
+                        <input type="password" id="password" name="password" class="form-input" required>
+                        <div class="password-requirements">
+                            <h4>パスワード要件:</h4>
+                            <ul>
+                                <li id="lengthReq">8文字以上</li>
+                                <li id="uppercaseReq">大文字を含む</li>
+                                <li id="lowercaseReq">小文字を含む</li>
+                                <li id="numberReq">数字を含む</li>
+                                <li id="specialReq">特殊文字を含む</li>
+                            </ul>
+                        </div>
+                        <div class="form-error" id="passwordError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">パスワード確認 *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required>
+                        <div class="form-error" id="confirmPasswordError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                            利用規約とプライバシーポリシーに同意します *
+                        </label>
+                        <div class="form-error" id="agreeTermsError"></div>
+                    </div>
+
+                    <div class="button-container">
+                        <button type="submit" class="register-button" id="registerButton">
+                            <span class="button-text">🚀 アカウントを作成 🚀</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="login-link">
+                    <p>すでにアカウントをお持ちの方は <a href="login.html">こちらからログイン</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="../images/logo.svg" alt="AeroMind Technologies Logo" class="footer-logo-image">
+                    </div>
+                    <p>〒100-0001<br>東京都千代田区千代田1-1-1<br>TEL: 03-1234-5678</p>
+                </div>
+                <div class="footer-section">
+                    <h4>リンク</h4>
+                    <ul>
+                        <li><a href="policy.html">会社ポリシー</a></li>
+                        <li><a href="onboarding.html">オンボーディング</a></li>
+                        <li><a href="organization.html">組織情報</a></li>
+                        <li><a href="finance.html">財務戦略</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>お問い合わせ</h4>
+                    <p>info@aeromind-tech.co.jp</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 AeroMind Technologies. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../scripts/main.js"></script>
+    <script src="../scripts/register.js"></script>
+</body>
+</html>

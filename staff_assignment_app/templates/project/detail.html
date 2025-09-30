@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.project_name }} - 案件詳細{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ project.project_name }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('project_list') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 案件一覧に戻る
+            </a>
+            <a href="{{ url_for('ai_assignment_candidates', project_id=project.id) }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-robot"></i> AI候補選定
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 案件基本情報 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle"></i> 基本情報
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="30%">案件コード:</th>
+                                <td>{{ project.project_code }}</td>
+                            </tr>
+                            <tr>
+                                <th>案件名:</th>
+                                <td>{{ project.project_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>ステータス:</th>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if project.status.value == 'ACTIVE' else 'secondary' }}">
+                                        {{ project.status.value }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="30%">開始日:</th>
+                                <td>{{ project.start_date or '未設定' }}</td>
+                            </tr>
+                            <tr>
+                                <th>終了日:</th>
+                                <td>{{ project.end_date or '未設定' }}</td>
+                            </tr>
+                            <tr>
+                                <th>総工数:</th>
+                                <td>{{ project.total_hours }}時間</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                {% if project.description %}
+                <div class="mt-3">
+                    <h6>案件説明</h6>
+                    <p class="text-muted">{{ project.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 案件要件 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> 案件要件
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if project.requirements %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>専門領域</th>
+                                    <th>スキル</th>
+                                    <th>プロフェッション</th>
+                                    <th>必要工数</th>
+                                    <th>優先度</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for requirement in project.requirements %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ requirement.domain_type.value if requirement.domain_type else '未指定' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning">
+                                            {{ requirement.skill_type.value if requirement.skill_type else '未指定' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            {{ requirement.profession_type.value if requirement.profession_type else '未指定' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ requirement.required_hours }}時間</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if requirement.priority >= 4 else 'warning' if requirement.priority >= 3 else 'secondary' }}">
+                                            {{ requirement.priority }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>案件要件が設定されていません。</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- アサイン状況 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-users"></i> アサイン状況
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if project.assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>要員名</th>
+                                    <th>会社</th>
+                                    <th>アサインタイプ</th>
+                                    <th>割合</th>
+                                    <th>アサイン工数</th>
+                                    <th>ステータス</th>
+                                    <th>期間</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in project.assignments %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('staff_detail', staff_id=assignment.staff.id) }}">
+                                            {{ assignment.staff.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if assignment.staff.company_type.value == 'KOBELCO' else 'secondary' }}">
+                                            {{ 'コベルコ' if assignment.staff.company_type.value == 'KOBELCO' else 'パートナー' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if assignment.assignment_type.value == 'FULL' else 'secondary' }}">
+                                            {{ 'フル' if assignment.assignment_type.value == 'FULL' else 'パーシャル' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ assignment.allocation_percentage * 100 }}%">
+                                                {{ "%.1f"|format(assignment.allocation_percentage * 100) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ assignment.assigned_hours }}時間</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if assignment.status.value == 'ACTIVE' else 'secondary' }}">
+                                            {{ 'アクティブ' if assignment.status.value == 'ACTIVE' else '非アクティブ' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ assignment.start_date }} ～ {{ assignment.end_date }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <p>アサインされた要員がいません。</p>
+                        <a href="{{ url_for('ai_assignment_candidates', project_id=project.id) }}" class="btn btn-primary">
+                            <i class="fas fa-robot"></i> AI候補選定で要員を探す
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
